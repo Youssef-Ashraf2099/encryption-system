@@ -10,10 +10,9 @@ public class RSA {
         }
         return true;
     }
-    int generatePrime(int bits) { //generate el p w el q
+    int generatePrime(int bits) throws Exception{  //generate el p w el q
         if (bits < 256) {
-            System.out.println("INVALID SIZE OF BITS");
-            return -1;
+            throw new Exception("INVALIDE SIZE");
         }
         while (true) {
             int prime = (int)(Math.random() * (1 << bits)) + 1; // Cast to int and generate in proper range
@@ -59,7 +58,7 @@ public int generateEncryptionKey(int euler) {
     return e;
 }
 
-    public int[] generatePublicKey(int bits) {
+    public int[] generatePublicKey(int bits) throws Exception {
         // Generate two distinct prime numbers
         int p = generatePrime(bits);
         int q = generatePrime(bits);
@@ -79,5 +78,17 @@ public int generateEncryptionKey(int euler) {
     }
 
 
-    //public static void main(String[] args) throws Exception {}
-}
+        public static void main(String[] args) throws Exception {
+            Scanner reader = new Scanner(System.in);
+            System.out.println("DISCRLEAMER EL SIZE LAZEM YB2A KBEER AKBER MEN 256 ");
+            System.out.print("Enter bit size: ");
+            int bitsSize = reader.nextInt();
+            RSA rsa = new RSA();
+
+            int[] publicKey = rsa.generatePublicKey(bitsSize);
+            System.out.println("Public Key:");
+            System.out.println("e (encryption key): " + publicKey[0]);
+            System.out.println("n (modulus): " + publicKey[1]);
+        }
+    }
+
