@@ -20,6 +20,7 @@ public class RSA {
 
     BigInteger generatePrime(int bits) {
         Random random = new Random();
+
         BigInteger primeCandidate;
         do {
             // Generate a random number of the specified bit length
@@ -43,6 +44,11 @@ public class RSA {
 
         return new BigInteger[] { p, q }; // Return the two prime numbers as an array
     }
+
+  public BigInteger EulersTolerance(BigInteger p, BigInteger q) {
+        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+  }
+    //gcd , backsubtitute, public key,
 
     public static void main(String[] args) throws Exception {
         Scanner sc = new Scanner(System.in);
