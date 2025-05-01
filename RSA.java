@@ -20,6 +20,7 @@ public class RSA {
 
     BigInteger generatePrime(int bits) {
         Random random = new Random();
+
         BigInteger primeCandidate;
         do {
             // Generate a random number of the specified bit length
@@ -29,7 +30,7 @@ public class RSA {
         return primeCandidate; // Return the prime number
     }
 
-    BigInteger[] generateKeys(int bits) {
+    BigInteger[] generateModSystem(int bits) {
         if (bits % 2 != 0) {
             bits++;
         } // Ensure bits is even for prime generation, to make sure that p * q generates n >= bits
@@ -44,6 +45,21 @@ public class RSA {
         return new BigInteger[] { p, q }; // Return the two prime numbers as an array
     }
 
+  public BigInteger EulersTolerance(BigInteger p, BigInteger q) {
+        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+  }
+
+    public BigInteger generatePublicKey(BigInteger euler) {
+        BigInteger e = euler.add(BigInteger.TWO); // Start with e > euler
+        while (!isPrime(e)) { // Ensure e is prime
+            e = e.add(BigInteger.ONE);
+        }
+        return e;
+    }
+
+
+
+
     public static void main(String[] args) throws Exception {
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter the number of bits for the modulus where modulus n is at least with size of bits >= 256 bits: ");
@@ -56,12 +72,16 @@ public class RSA {
         RSA rsa = new RSA(); // Create an instance of the RSA class
 
         // Generate the public and private keys
-        BigInteger[] keys = rsa.generateKeys(bits); // Generate the public and private keys
+        BigInteger[] keys = rsa.generateModSystem(bits); // Generate the public and private keys
         BigInteger p = keys[0]; // Get the first prime number
         BigInteger q = keys[1]; // Get the second prime number
         BigInteger n = p.multiply(q); // Calculate n = p * q
         System.out.println("p: " + p); // Print the first prime number
         System.out.println("q: " + q); // Print the second prime number 
         System.out.println("n: " + n); // Print the modulus n
+        BigInteger euler = rsa.EulersTolerance(p, q);
+        System.out.println("euler: " + euler);
+        BigInteger publicKey = rsa.generatePublicKey(euler);
+        System.out.println("publicKey: " + publicKey);
     }
 }
