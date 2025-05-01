@@ -1,7 +1,9 @@
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.math.BigInteger;
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 public class RSA {
 
     public boolean isPrime(BigInteger n) {
@@ -88,6 +90,16 @@ public class RSA {
     }
     public static void main(String[] args) throws Exception {
         Scanner sc = new Scanner(System.in);
+        String filename = "message.txt";
+        String message ;
+        try{
+            message =new String(Files.readAllBytes(Paths.get(filename)));
+            System.out.println("Message is: "+message);
+
+        }catch (IOException e){
+            e.printStackTrace();
+            return;
+        }
         System.out.println("Enter the number of bits for the modulus where modulus n is at least with size of bits >= 256 bits: ");
         int bits = sc.nextInt(); // Read the number of bits for the modulus
         while (bits < 256) {
@@ -103,7 +115,7 @@ public class RSA {
         BigInteger q = keys[1]; // Get the second prime number
         BigInteger n = p.multiply(q); // Calculate n = p * q
         System.out.println("p: " + p); // Print the first prime number
-        System.out.println("q: " + q); // Print the second prime number 
+        System.out.println("q: " + q); // Print the second prime number
         System.out.println("n: " + n); // Print the modulus n
         BigInteger euler = rsa.EulersTolerance(p, q);
         System.out.println("euler: " + euler);
@@ -115,7 +127,7 @@ public class RSA {
         System.out.println("The generated private Key in BigInteger: " + d);
         System.out.println("///////////////test////////////");
 
-        String message = "Hello, RSA!";
+
         BigInteger bp = new BigInteger("32481147211444851"); // Declare bp as a BigInteger
         System.out.println("Public Key (e): " + e);
         System.out.println("Private Key (d): " + d);
