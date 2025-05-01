@@ -93,8 +93,13 @@ public class RSA {
         String filename = "message.txt";
         String message ;
         try{
-            message =new String(Files.readAllBytes(Paths.get(filename)));
-            System.out.println("Message is: "+message);
+            File file = new File(filename);
+            Scanner fileScanner = new Scanner(file);
+
+            message = scanner.next();
+            System.out.println("message: " + message);
+
+            }
 
         }catch (IOException e){
             e.printStackTrace();
