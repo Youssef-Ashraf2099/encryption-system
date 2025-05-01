@@ -1,60 +1,35 @@
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 public class RSA {
 
-    public boolean isPrime(BigInteger n) {
-        if (n.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
-            return false; // Even numbers greater than 2 are not prime
-        }
-
-        // Use the Miller-Rabin primality test with a fixed number of iterations
-        int certainty = 40; // Higher value increases accuracy
-        /*
-         * The certainty parameter determines the accuracy of the test:
-         * A value of 40 means the probability of a false positive is less than 2^-40,
-         * which is sufficient for cryptographic purposes.
-         */
-        return n.isProbablePrime(certainty);
-    }
-
-    BigInteger generatePrime(int bits) {
-        Random random = new Random();
-
-        BigInteger primeCandidate;
-        do {
-            // Generate a random number of the specified bit length
-            primeCandidate = new BigInteger(bits, random).setBit(bits - 1); // Ensure the number has the specified bit length
-        } while (!isPrime(primeCandidate)); // Check if the number is prime
-
-        return primeCandidate; // Return the prime number
+    public BigInteger EulersTotient(BigInteger p, BigInteger q) {
+        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
     }
 
     BigInteger[] generateModSystem(int bits) {
-        if (bits % 2 != 0) {
-            bits++;
-        } // Ensure bits is even for prime generation, to make sure that p * q generates n >= bits
-
+        SecureRandom random = new SecureRandom(); // Create a SecureRandom instance for secure random number generation
         // Generate two distinct prime numbers
-        BigInteger p = generatePrime(bits / 2);
-        BigInteger q;
+        BigInteger p = BigInteger.probablePrime((bits + 1) / 2, random);
+        BigInteger q, n;
+        int counter = 0; // Initialize a counter to track the number of iterations
         do {
-            q = generatePrime(bits / 2); // Generate the second prime number
-        } while (p.equals(q)); // Ensure p and q are different
+            counter++; // Increment the counter for each iteration
+            q = BigInteger.probablePrime((bits + 1) / 2, random); // Generate the second prime number
+            n = p.multiply(q); // Calculate n = p * q
+        } while (p.equals(q) || n.bitLength() != bits); // Ensure p and q are distinct and n has the desired bit length
 
-        return new BigInteger[] { p, q }; // Return the two prime numbers as an array
+        // Print the number of iterations taken to find distinct primes
+        System.out.println("Number of iterations to find distinct primes: " + counter);
+        return new BigInteger[] {p, q, n}; // Return the generated prime numbers and modulus
     }
-
-  public BigInteger EulersTolerance(BigInteger p, BigInteger q) {
-        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
-  }
 
     public BigInteger generatePublicKey(BigInteger euler) {
         BigInteger e = euler.add(BigInteger.TWO); // Start with e > euler
-        while (!isPrime(e)) { // Ensure e is prime
+        while (!e.isProbablePrime(40)) { // Ensure e is prime
             e = e.add(BigInteger.ONE);
         }
         return e;
@@ -89,71 +64,93 @@ public class RSA {
         return fromBigIntegerToString(decryptedBigInt); // Convert the decrypted BigInteger back to a string
     }
     public static void main(String[] args) throws Exception {
-        Scanner sc = new Scanner(System.in);
+        Scanner sc;
         String filename = "message.txt";
-        String message ;
-        try{
+        String message;
+    
+        // Read the message from the file
+        try {
             File file = new File(filename);
-            Scanner fileScanner = new Scanner(file);
-
-            message = scanner.next();
-            System.out.println("message: " + message);
-
-            }
-
-        }catch (IOException e){
+            sc = new Scanner(file);
+    
+            message = sc.next(); // Read the first word from the file
+            System.out.println("Message from file: " + message);
+        } catch (IOException e) {
+            System.err.println("Error reading the file: " + filename);
             e.printStackTrace();
             return;
         }
-        System.out.println("Enter the number of bits for the modulus where modulus n is at least with size of bits >= 256 bits: ");
-        int bits = sc.nextInt(); // Read the number of bits for the modulus
+    
+        // Prompt the user for the modulus bit length
+        System.out.println("Enter the number of bits for the modulus (minimum 256 bits): ");
+        sc = new Scanner(System.in);
+        int bits = sc.nextInt();
         while (bits < 256) {
-            System.out.println("Please enter a number greater than or equal to 256: ");
-            bits = sc.nextInt(); // Read the number of bits for the modulus
+            System.out.println("Invalid input. Please enter a number greater than or equal to 256: ");
+            bits = sc.nextInt();
         }
-
-        RSA rsa = new RSA(); // Create an instance of the RSA class
-
+    
+        // Create an instance of the RSA class
+        RSA rsa = new RSA();
+    
         // Generate the public and private keys
-        BigInteger[] keys = rsa.generateModSystem(bits); // Generate the public and private keys
-        BigInteger p = keys[0]; // Get the first prime number
-        BigInteger q = keys[1]; // Get the second prime number
-        BigInteger n = p.multiply(q); // Calculate n = p * q
-        System.out.println("p: " + p); // Print the first prime number
-        System.out.println("q: " + q); // Print the second prime number
-        System.out.println("n: " + n); // Print the modulus n
-        BigInteger euler = rsa.EulersTolerance(p, q);
-        System.out.println("euler: " + euler);
+        BigInteger[] keys = rsa.generateModSystem(bits);
+        BigInteger p = keys[0]; // First prime number
+        BigInteger q = keys[1]; // Second prime number
+        BigInteger n = keys[2]; // Modulus n = p * q
+    
+        // Display the generated primes and modulus
+        System.out.println("Generated prime p: " + p);
+        System.out.println("Generated prime q: " + q);
+        System.out.println("Modulus n (p * q): " + n);
+    
+        // Display the bit lengths of p, q, and n
+        System.out.println("Bit length of p: " + p.bitLength());
+        System.out.println("Bit length of q: " + q.bitLength());
+        System.out.println("Bit length of n: " + n.bitLength());
+    
+        // Calculate Euler's totient
+        BigInteger euler = rsa.EulersTotient(p, q);
+        System.out.println("Euler's totient (φ(n)): " + euler);
+    
+        // Generate the public key
         BigInteger e = rsa.generatePublicKey(euler);
-        System.out.println("The generated public Key in plaintext: " + fromBigIntegerToString(e));
-        System.out.println("The generated public Key in BigInteger: " + e);
+        System.out.println("Generated public key (e) in plaintext: " + fromBigIntegerToString(e));
+        System.out.println("Generated public key (e) in BigInteger: " + e);
+    
+        // Generate the private key
         BigInteger d = rsa.generatePrivateKey(e, euler);
-        System.out.println("The generated private key in plaintext: " + fromBigIntegerToString(d));
-        System.out.println("The generated private Key in BigInteger: " + d);
-        System.out.println("///////////////test////////////");
-
-
-        BigInteger bp = new BigInteger("32481147211444851"); // Declare bp as a BigInteger
+        System.out.println("Generated private key (d) in plaintext: " + fromBigIntegerToString(d));
+        System.out.println("Generated private key (d) in BigInteger: " + d);
+    
+        System.out.println("/////////////// Encryption and Decryption Test ///////////////");
+    
+        // Test encryption and decryption with a BigInteger
+        BigInteger bp = new BigInteger("32481147211444851");
         System.out.println("Public Key (e): " + e);
         System.out.println("Private Key (d): " + d);
         System.out.println("Modulus (n): " + n);
-
-        String EncryptedMessage = encryptString(message, e, n);
-        BigInteger EncryptInteger = encrypt(bp,e,n);
-        System.out.println("Encrypted Message: " + EncryptedMessage);
-        System.out.println("Encrypted Integer:" + EncryptInteger);
-
-        String DecryptedMessage = decryptString(EncryptedMessage, d, n);
-        BigInteger DecryptInteger = decrypt(EncryptInteger,d,n);
-        System.out.println("Decrypted Message: " + DecryptedMessage);
-        System.out.println("Decrypted Integer:" + DecryptInteger);
-
-        if (message.equals(DecryptedMessage) && bp.equals(DecryptInteger)) {
+    
+        // Encrypt and decrypt the message from the file
+        String encryptedMessage = encryptString(message, e, n);
+        BigInteger encryptedInteger = encrypt(bp, e, n);
+        System.out.println("Encrypted Message: " + encryptedMessage);
+        System.out.println("Encrypted Integer: " + encryptedInteger);
+    
+        String decryptedMessage = decryptString(encryptedMessage, d, n);
+        BigInteger decryptedInteger = decrypt(encryptedInteger, d, n);
+        System.out.println("Decrypted Message: " + decryptedMessage);
+        System.out.println("Decrypted Integer: " + decryptedInteger);
+    
+        // Verify the encryption and decryption
+        if (message.equals(decryptedMessage) && bp.equals(decryptedInteger)) {
             System.out.println("Encryption and Decryption successful!");
         } else {
             System.out.println("Encryption and Decryption failed.");
         }
+    
+        // Close the scanner to release resources
+        sc.close();
+        System.out.println("End of program.");
     }
-
-
 }
