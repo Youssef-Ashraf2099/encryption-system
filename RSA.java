@@ -2,6 +2,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.math.BigInteger;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.security.SecureRandom;
 public class RSA {
@@ -67,20 +68,20 @@ public class RSA {
         Scanner sc;
         String filename = "message.txt";
         String message;
-    
+
         // Read the message from the file
         try {
             File file = new File(filename);
             sc = new Scanner(file);
-    
-            message = sc.next(); // Read the first word from the file
+
+            message = sc.nextLine(); // Read the first word from the file
             System.out.println("Message from file: " + message);
         } catch (IOException e) {
             System.err.println("Error reading the file: " + filename);
             e.printStackTrace();
             return;
         }
-    
+
         // Prompt the user for the modulus bit length
         System.out.println("Enter the number of bits for the modulus (minimum 256 bits): ");
         sc = new Scanner(System.in);
@@ -89,66 +90,84 @@ public class RSA {
             System.out.println("Invalid input. Please enter a number greater than or equal to 256: ");
             bits = sc.nextInt();
         }
-    
+
         // Create an instance of the RSA class
         RSA rsa = new RSA();
-    
+
         // Generate the public and private keys
         BigInteger[] keys = rsa.generateModSystem(bits);
         BigInteger p = keys[0]; // First prime number
         BigInteger q = keys[1]; // Second prime number
         BigInteger n = keys[2]; // Modulus n = p * q
-    
+
         // Display the generated primes and modulus
         System.out.println("Generated prime p: " + p);
         System.out.println("Generated prime q: " + q);
         System.out.println("Modulus n (p * q): " + n);
-    
+
         // Display the bit lengths of p, q, and n
         System.out.println("Bit length of p: " + p.bitLength());
         System.out.println("Bit length of q: " + q.bitLength());
         System.out.println("Bit length of n: " + n.bitLength());
-    
+
         // Calculate Euler's totient
         BigInteger euler = rsa.EulersTotient(p, q);
         System.out.println("Euler's totient (φ(n)): " + euler);
-    
+
         // Generate the public key
         BigInteger e = rsa.generatePublicKey(euler);
         System.out.println("Generated public key (e) in plaintext: " + fromBigIntegerToString(e));
         System.out.println("Generated public key (e) in BigInteger: " + e);
-    
+
         // Generate the private key
         BigInteger d = rsa.generatePrivateKey(e, euler);
         System.out.println("Generated private key (d) in plaintext: " + fromBigIntegerToString(d));
         System.out.println("Generated private key (d) in BigInteger: " + d);
-    
+
         System.out.println("/////////////// Encryption and Decryption Test ///////////////");
-    
+
         // Test encryption and decryption with a BigInteger
-        BigInteger bp = new BigInteger("32481147211444851");
+        BigInteger bp = fromStringToBigInteger(message); // Convert the message to BigInteger
         System.out.println("Public Key (e): " + e);
         System.out.println("Private Key (d): " + d);
         System.out.println("Modulus (n): " + n);
-    
+
         // Encrypt and decrypt the message from the file
         String encryptedMessage = encryptString(message, e, n);
         BigInteger encryptedInteger = encrypt(bp, e, n);
         System.out.println("Encrypted Message: " + encryptedMessage);
         System.out.println("Encrypted Integer: " + encryptedInteger);
-    
+
         String decryptedMessage = decryptString(encryptedMessage, d, n);
         BigInteger decryptedInteger = decrypt(encryptedInteger, d, n);
         System.out.println("Decrypted Message: " + decryptedMessage);
         System.out.println("Decrypted Integer: " + decryptedInteger);
-    
+
+        // Write the encrypted message to encryptedRSA.txt
+        try (FileWriter encryptedWriter = new FileWriter("encryptedRSA.txt")) {
+            encryptedWriter.write("Encrypted Message: " + encryptedMessage + "\n");
+            encryptedWriter.write("Encrypted Integer: " + encryptedInteger + "\n");
+        } catch (IOException ex) {
+            System.err.println("Error writing to encryptedRSA.txt");
+            ex.printStackTrace();
+        }
+
+        // Write the decrypted message to decryptedRSA.txt
+        try (FileWriter decryptedWriter = new FileWriter("decryptedRSA.txt")) {
+            decryptedWriter.write("Decrypted Message: " + decryptedMessage + "\n");
+            decryptedWriter.write("Decrypted Integer: " + decryptedInteger + "\n");
+        } catch (IOException ex) {
+            System.err.println("Error writing to decryptedRSA.txt");
+            ex.printStackTrace();
+        }
+
         // Verify the encryption and decryption
         if (message.equals(decryptedMessage) && bp.equals(decryptedInteger)) {
             System.out.println("Encryption and Decryption successful!");
         } else {
             System.out.println("Encryption and Decryption failed.");
         }
-    
+
         // Close the scanner to release resources
         sc.close();
         System.out.println("End of program.");
