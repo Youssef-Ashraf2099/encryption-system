@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 public class RSA {
 
     public BigInteger EulersTotient(BigInteger p, BigInteger q) {
-        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)); //subtract from p and q ONE and multiply them (p-1)*(q-1)
     }
 
     BigInteger[] generateModSystem(int bits) {
@@ -31,10 +31,23 @@ public class RSA {
     public BigInteger generatePublicKey(BigInteger euler) {
         BigInteger e = euler.add(BigInteger.TWO); // Start with e > euler
         while (!e.isProbablePrime(40)) { // Ensure e is prime
-            e = e.add(BigInteger.ONE);
+         //ensure false postive yb2a loww
+            e = e.add(BigInteger.ONE); //to find next prime e+1
         }
         return e;
     }
+    /*
+    ASCII: 7 bits. 128 code points.
+
+    ISO-8859-1: 8 bits. 256 code points. bed3m el english w latin w kam haga zyada bas mesh byst3ml kteer
+
+À	Á	Â	Ã	Ä	Å	Æ	Ç	È	É	Ê	Ë	Ì	Í	Î	Ï
+Dx	Ð	Ñ	Ò	Ó	Ô	Õ	Ö	×	Ø	Ù	Ú	Û	Ü	Ý	Þ	ß
+Ex	à	á	â	ã	ä	å	æ	ç	è	é	ê	ë	ì	í	î	ï
+Fx	ð	ñ	ò	ó	ô	õ	ö	÷	ø	ù	ú	û	ü	ý	þ	ÿ ++ alphabitics
+
+    UTF-8: 8-32 bits (1-4 bytes). 1,112,064 code points. benst3mlto feh el html for langss bed3am el arabic w many languages kteer
+     */
    public static BigInteger fromStringToBigInteger(String s){
      byte [] bytes=s.getBytes(StandardCharsets.ISO_8859_1);
      return new BigInteger(1,bytes);
@@ -42,6 +55,7 @@ public class RSA {
     public static String fromBigIntegerToString(BigInteger number) {
         byte[] bytes = number.toByteArray(); // Convert BigInteger to a byte array
         return new String(bytes, StandardCharsets.ISO_8859_1); // Convert the byte array to a String
+
     }
     public BigInteger generatePrivateKey(BigInteger e, BigInteger euler) {
         return e.modInverse(euler); // Calculate the modular multiplicative inverse
