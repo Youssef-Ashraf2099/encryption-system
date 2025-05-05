@@ -29,12 +29,9 @@ public class RSA {
     }
 
     public BigInteger generatePublicKey(BigInteger euler) {
-        BigInteger e = euler.add(BigInteger.TWO); // Start with e > euler
-        while (!e.isProbablePrime(40)) { // Ensure e is prime
-         //ensure false postive yb2a loww
-            e = e.add(BigInteger.ONE); //to find next prime e+1
-        }
-        return e;
+        return new BigInteger("1000000007"); // Return a commonly used public exponent (Fermat's prime)
+        // fermat's prime is a prime number of the form 2^n + 1, where n is a positive integer.
+        // It is often used as a public exponent in RSA encryption due to its properties that make encryption and decryption efficient.
     }
     /*
     ASCII: 7 bits. 128 code points.
@@ -142,9 +139,6 @@ Fx	ð	ñ	ò	ó	ô	õ	ö	÷	ø	ù	ú	û	ü	ý	þ	ÿ ++ alphabitics
 
         // Test encryption and decryption with a BigInteger
         BigInteger bp = fromStringToBigInteger(message); // Convert the message to BigInteger
-        System.out.println("Public Key (e): " + e);
-        System.out.println("Private Key (d): " + d);
-        System.out.println("Modulus (n): " + n);
 
         // Encrypt and decrypt the message from the file
         String encryptedMessage = encryptString(message, e, n);
