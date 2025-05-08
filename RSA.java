@@ -29,9 +29,13 @@ public class RSA {
     }
 
     public BigInteger generatePublicKey(BigInteger euler) {
-        return new BigInteger("1000000007"); // Return a commonly used public exponent (Fermat's prime)
-        // fermat's prime is a prime number of the form 2^n + 1, where n is a positive integer.
-        // It is often used as a public exponent in RSA encryption due to its properties that make encryption and decryption efficient.
+        BigInteger e = new BigInteger(euler.bitLength()/2, new SecureRandom()); // Generate a random number e of half the bit length
+        while (true) {
+            if (e.gcd(euler).equals(BigInteger.ONE)) { // Check if e and euler are coprime
+                return e; // Return the public key if coprime
+            }
+            e = e.add(BigInteger.ONE); // Increment e by 2 to find the next odd number
+        }
     }
     /*
     ASCII: 7 bits. 128 code points.
